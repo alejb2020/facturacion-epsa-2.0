@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturación Epsa Nueva Modalidad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #montoDiv {
+            display: none;
+            margin-top: 20px;
+        }
+        #resultadoDiv {
+            display: none;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Facturación Epsa Nueva Modalidad</h1>
+        <form>
+            <!-- Paso 1: Selección de depósito -->
+            <label for="deposito">¿Estás facturando para el depósito de?</label>
+            <select id="deposito" name="deposito">
+                <option value="">Selecciona una opción</option>
+                <option value="SVI1">SVI1: Villa Maria</option>
+                <option value="EVI1">EVI1: Justiniano Posse</option>
+                <option value="EVI2">EVI2: Las Varillas</option>
+                <option value="EVI3">EVI3: Leones</option>
+            </select>
+            
+            <!-- Paso 2: Ingreso del monto total del resumen -->
+            <div id="montoDiv">
+                <label for="monto">Ingresa el monto total de tu resumen:</label>
+                <input type="number" id="monto" name="monto" placeholder="Ej: 100000.00" step="0.01" min="0">
+                <button type="button" id="calcularBtn">Calcular</button>
+            </div>
+            
+            <!-- Paso 3: Resultado y tabla -->
+            <div id="resultadoDiv">
+                <p id="resultadoTexto"></p>
+                <table id="facturaTable">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="desc"></td>
+                            <td id="cant"></td>
+                            <td id="pu"></td>
+                            <td id="total"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+        <!-- Aquí puedes agregar más contenido -->
+        <p>Esta es una página básica para facturación. Agrega más elementos según tus necesidades.</p>
+    </div>
+
+    <script>
+        // Datos de depósitos
+        const depositos = {
+            SVI1: { nombre: "Villa María", monto: 81096.00, descripcion: "82114221 – Ultima Milla Villa María" },
+            EVI1: { nombre: "Justiniano Posse", monto: 71467.00, descripcion: "82114221 – Ultima Milla Justiniano Posse" },
+            EVI2: { nombre: "Las Varillas", monto: 74467.00, descripcion: "82114221 – Ultima Milla Las Varillas" },
+            EVI3: { nombre: "Leones", monto: 68760.00, descripcion: "82114221 – Ultima Milla Leones" }
+        };
+
+        // Mostrar div de monto al seleccionar depósito
+        document.getElementById('deposito').addEventListener('change', function() {
+            const montoDiv = document.getElementById('montoDiv');
+            const resultadoDiv = document.getElementById('resultadoDiv');
+            if (this.value !== '') {
+                montoDiv.style.display = 'block';
+                resultadoDiv.style.display = 'none'; // Ocultar resultado si cambia selección
+            } else {
+                montoDiv.style.display = 'none';
+                resultadoDiv.style.display = 'none';
+            }
+        });
+
+        // Calcular al hacer clic en el botón
+        document.getElementById('calcularBtn').addEventListener('click', function() {
+            const selectValue = document.getElementById('deposito').value;
+            const montoInput = document.getElementById('monto');
+            const montoIngresado = parseFloat(montoInput.value);
+            
+            if (selectValue && montoIngresado > 0) {
+                const depositoSeleccionado = depositos[selectValue];
+                
+                // Calcular cantidad: división, luego redondear hacia arriba en el 4to decimal
+                const cantidad = (montoIngresado / depositoSeleccionado.monto) * 10000;
+                const cantidadRedondeada = Math.ceil(cantidad) / 10000;
+                
+                // Mostrar resultado
+                document.getElementById('resultadoTexto').textContent = `Tu cantidad es: ${cantidadRedondeada.toFixed(4)}`;
+                
+                // Llenar tabla
+                document.getElementById('desc').textContent = depositoSeleccionado.descripcion;
+                document.getElementById('cant').textContent = cantidadRedondeada.toFixed(4);
+                document.getElementById('pu').textContent = depositoSeleccionado.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+                const total = cantidadRedondeada * depositoSeleccionado.monto;
+                document.getElementById('total').textContent = total.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+                
+                // Mostrar resultado y tabla
+                document.getElementById('resultadoDiv').style.display = 'block';
+            } else {
+                alert('Por favor, selecciona un depósito e ingresa un monto válido.');
+            }
+        });
+    </script>
+</body>
+</html>
